@@ -3,6 +3,7 @@ import 'authorization_request.dart';
 import 'authorization_service_configuration.dart';
 import 'authorization_token_request.dart';
 import 'common_request_details.dart';
+import 'end_session_request.dart';
 import 'grant_types.dart';
 import 'token_request.dart';
 
@@ -11,6 +12,7 @@ Map<String, Object?> _convertCommonRequestDetailsToMap(
   return <String, Object?>{
     'clientId': commonRequestDetails.clientId,
     'issuer': commonRequestDetails.issuer,
+    'nonce': commonRequestDetails.nonce,
     'discoveryUrl': commonRequestDetails.discoveryUrl,
     'redirectUrl': commonRequestDetails.redirectUrl,
     'scopes': commonRequestDetails.scopes,
@@ -18,6 +20,22 @@ Map<String, Object?> _convertCommonRequestDetailsToMap(
     'additionalParameters': commonRequestDetails.additionalParameters,
     'allowInsecureConnections': commonRequestDetails.allowInsecureConnections,
   };
+}
+
+extension EndSessionRequestMapper on EndSessionRequest {
+  Map<String, Object?> toMap() {
+    return <String, Object?>{
+      'idTokenHint': idTokenHint,
+      'postLogoutRedirectUrl': postLogoutRedirectUrl,
+      'state': state,
+      'allowInsecureConnections': allowInsecureConnections,
+      'additionalParameters': additionalParameters,
+      'issuer': issuer,
+      'discoveryUrl': discoveryUrl,
+      'serviceConfiguration': serviceConfiguration?.toMap(),
+      'preferEphemeralSession': preferEphemeralSession,
+    };
+  }
 }
 
 extension AuthorizationRequestParameters on AuthorizationRequest {
@@ -29,10 +47,11 @@ extension AuthorizationRequestParameters on AuthorizationRequest {
 
 extension AuthorizationServiceConfigurationMapper
     on AuthorizationServiceConfiguration {
-  Map<String, Object> toMap() {
-    return <String, Object>{
+  Map<String, Object?> toMap() {
+    return <String, Object?>{
       'tokenEndpoint': tokenEndpoint,
       'authorizationEndpoint': authorizationEndpoint,
+      'endSessionEndpoint': endSessionEndpoint,
     };
   }
 }
@@ -81,5 +100,6 @@ Map<String, Object?> _convertAuthorizationParametersToMap(
     'loginHint': authorizationParameters.loginHint,
     'promptValues': authorizationParameters.promptValues,
     'preferEphemeralSession': authorizationParameters.preferEphemeralSession,
+    'responseMode': authorizationParameters.responseMode,
   };
 }

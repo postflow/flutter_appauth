@@ -1,3 +1,41 @@
+## [6.0.0]
+
+* **Breaking change** Aligned minimum Flutter and Dart SDK constraints to 3.0.0 and 2.17 respectively
+* Bumped maximum Dart SDK constraint
+
+
+## [5.2.0+1]
+
+* Updated code for API docs to avoid lines longer than 80 characters
+
+## [5.2.0]
+
+* Added `preferEphemeralSession` to `EndSessionRequest` Thanks to the PR from [Daniel Ziegler](https://github.com/ziegler-daniel).
+
+## [5.1.0]
+
+* Added ability to specify the `nonce` as part of requests
+
+## [5.0.0]
+
+* **Breaking change** `AuthorizationResponse`'s  constructor now includes `nonce` and has changed to take positional parameters
+* `nonce` can now be specified for `TokenRequest` class. This is especially useful on Android as the AppAuth Android SKD had turned on ID token validation that results in nonce mismatch errors. These errors should no longer appear when using the `nonce` value returned by the `AuthorizationResponse` object after calling `authorize()` and passing the value to the `TokenRequest` when calling the `token()` method
+* now uses `mocktail` instead of `mockito` as dev dependency for unit tests
+
+## [4.1.0]
+
+* Added `scopes` property to `TokenResponse` class and `AuthorizationTokenResponse` class that inherits from it. Thanks to PR from [leoshusar](https://github.com/leoshusar)
+
+## [4.0.0]
+
+* **Breaking change** `AuthorizationServiceConfiguration` constructor has changed to take named parameters
+* Added `endSession()` method, `EndSessionRequest` and `EndSessionResponse` classes to support end session requests
+
+## [3.1.0]
+
+* Added the ability to specify the response mode for authorization requests. This can be done using the `responseMode` parameter  when constructing either an `AuthorizationRequest` or `AuthorizationTokenRequest`. This was done as the AppAuth Android SDK throws an exception when this was done via `additionalParameters`
+* Updated Dart SDK constraints
+
 ## [3.0.0]
 
 * Migrated to null safety

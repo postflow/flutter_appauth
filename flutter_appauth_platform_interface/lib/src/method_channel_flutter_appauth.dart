@@ -1,4 +1,6 @@
 import 'package:flutter/services.dart';
+import 'package:flutter_appauth_platform_interface/src/end_session_request.dart';
+import 'package:flutter_appauth_platform_interface/src/end_session_response.dart';
 
 import 'authorization_request.dart';
 import 'authorization_response.dart';
@@ -21,9 +23,12 @@ class MethodChannelFlutterAppAuth extends FlutterAppAuthPlatform {
       return null;
     }
     return AuthorizationResponse(
-        result['authorizationCode'],
-        result['codeVerifier'],
-        result['authorizationAdditionalParameters']?.cast<String, dynamic>());
+      authorizationCode: result['authorizationCode'],
+      codeVerifier: result['codeVerifier'],
+      nonce: result['nonce'],
+      authorizationAdditionalParameters:
+          result['authorizationAdditionalParameters']?.cast<String, dynamic>(),
+    );
   }
 
   @override
@@ -43,6 +48,7 @@ class MethodChannelFlutterAppAuth extends FlutterAppAuthPlatform {
                 result['accessTokenExpirationTime'].toInt()),
         result['idToken'],
         result['tokenType'],
+        result['scopes']?.cast<String>(),
         result['authorizationAdditionalParameters']?.cast<String, dynamic>(),
         result['tokenAdditionalParameters']?.cast<String, dynamic>());
   }
@@ -63,6 +69,17 @@ class MethodChannelFlutterAppAuth extends FlutterAppAuthPlatform {
                 result['accessTokenExpirationTime'].toInt()),
         result['idToken'],
         result['tokenType'],
+        result['scopes']?.cast<String>(),
         result['tokenAdditionalParameters']?.cast<String, dynamic>());
+  }
+
+  @override
+  Future<EndSessionResponse?> endSession(EndSessionRequest request) async {
+    final Map<dynamic, dynamic>? result =
+        await _channel.invokeMethod('endSession', request.toMap());
+    if (result == null) {
+      return null;
+    }
+    return EndSessionResponse(result['state']);
   }
 }

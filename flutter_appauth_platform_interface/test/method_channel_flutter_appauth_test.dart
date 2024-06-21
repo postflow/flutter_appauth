@@ -1,10 +1,7 @@
 import 'package:flutter/services.dart';
+import 'package:flutter_appauth_platform_interface/flutter_appauth_platform_interface.dart';
 import 'package:flutter_appauth_platform_interface/src/method_channel_flutter_appauth.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:flutter_appauth_platform_interface/flutter_appauth_platform_interface.dart';
-import 'package:mockito/mockito.dart';
-import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -19,7 +16,9 @@ void main() {
     log.clear();
   });
 
-  MethodChannelFlutterAppAuth flutterAppAuth = MethodChannelFlutterAppAuth();
+  final MethodChannelFlutterAppAuth flutterAppAuth =
+      MethodChannelFlutterAppAuth();
+
   test('authorize', () async {
     await flutterAppAuth.authorize(AuthorizationRequest(
         'someClientId', 'someRedirectUrl',
@@ -39,6 +38,8 @@ void main() {
           'allowInsecureConnections': false,
           'preferEphemeralSession': false,
           'promptValues': null,
+          'responseMode': null,
+          'nonce': null,
         })
       ],
     );
@@ -47,7 +48,9 @@ void main() {
   test('authorizeAndExchangeCode', () async {
     await flutterAppAuth.authorizeAndExchangeCode(AuthorizationTokenRequest(
         'someClientId', 'someRedirectUrl',
-        discoveryUrl: 'someDiscoveryUrl', loginHint: 'someLoginHint'));
+        discoveryUrl: 'someDiscoveryUrl',
+        loginHint: 'someLoginHint',
+        responseMode: 'fragment'));
     expect(
       log,
       <Matcher>[
@@ -67,7 +70,9 @@ void main() {
           'refreshToken': null,
           'authorizationCode': null,
           'grantType': 'authorization_code',
-          'codeVerifier': null
+          'codeVerifier': null,
+          'responseMode': 'fragment',
+          'nonce': null,
         })
       ],
     );
@@ -100,7 +105,8 @@ void main() {
             'refreshToken': 'someRefreshToken',
             'authorizationCode': null,
             'grantType': 'refresh_token',
-            'codeVerifier': null
+            'codeVerifier': null,
+            'nonce': null,
           })
         ],
       );
@@ -126,7 +132,8 @@ void main() {
             'refreshToken': null,
             'authorizationCode': 'someAuthorizationCode',
             'grantType': 'authorization_code',
-            'codeVerifier': null
+            'codeVerifier': null,
+            'nonce': null,
           })
         ],
       );
@@ -151,19 +158,32 @@ void main() {
             'refreshToken': null,
             'authorizationCode': null,
             'grantType': 'someGrantType',
-            'codeVerifier': null
+            'codeVerifier': null,
+            'nonce': null,
           })
         ],
       );
     });
   });
+
+  test('endSession', () async {
+    await flutterAppAuth.endSession(EndSessionRequest(
+        idTokenHint: 'someIdToken',
+        postLogoutRedirectUrl: 'somePostLogoutRedirectUrl',
+        state: 'someState',
+        discoveryUrl: 'someDiscoveryUrl'));
+    expect(log, <Matcher>[
+      isMethodCall('endSession', arguments: <String, Object?>{
+        'idTokenHint': 'someIdToken',
+        'postLogoutRedirectUrl': 'somePostLogoutRedirectUrl',
+        'state': 'someState',
+        'allowInsecureConnections': false,
+        'additionalParameters': null,
+        'issuer': null,
+        'discoveryUrl': 'someDiscoveryUrl',
+        'serviceConfiguration': null,
+        'preferEphemeralSession': false,
+      })
+    ]);
+  });
 }
-
-class FlutterAppAuthPlatformMock extends Mock
-    with MockPlatformInterfaceMixin
-    implements FlutterAppAuthPlatform {}
-
-class ImplementsFlutterAppAuthPlatform extends Mock
-    implements FlutterAppAuthPlatform {}
-
-class ExtendsFlutterAppAuthPlatform extends FlutterAppAuthPlatform {}

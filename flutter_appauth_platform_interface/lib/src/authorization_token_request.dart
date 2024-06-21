@@ -19,6 +19,8 @@ class AuthorizationTokenRequest extends TokenRequest
     List<String>? promptValues,
     bool allowInsecureConnections = false,
     bool preferEphemeralSession = false,
+    String? nonce,
+    String? responseMode,
   }) : super(
           clientId,
           redirectUrl,
@@ -30,9 +32,11 @@ class AuthorizationTokenRequest extends TokenRequest
           serviceConfiguration: serviceConfiguration,
           additionalParameters: additionalParameters,
           allowInsecureConnections: allowInsecureConnections,
+          nonce: nonce,
         ) {
     this.loginHint = loginHint;
     this.promptValues = promptValues;
     this.preferEphemeralSession = preferEphemeralSession;
+    this.responseMode = responseMode;
   }
 }

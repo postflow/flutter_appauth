@@ -6,6 +6,7 @@ class TokenResponse {
     this.accessTokenExpirationDateTime,
     this.idToken,
     this.tokenType,
+    this.scopes,
     this.tokenAdditionalParameters,
   );
 
@@ -28,6 +29,11 @@ class TokenResponse {
   /// The type of token returned by the authorization server.
   final String? tokenType;
 
-  /// Contains additional parameters returned by the authorization server from making the token request.
+  /// Scopes of the access token. If scopes are identical to those originally
+  /// requested, then this value is optional.
+  final List<String>? scopes;
+
+  /// Contains additional parameters returned by the authorization server from
+  /// making the token request.
   final Map<String, dynamic>? tokenAdditionalParameters;
 }

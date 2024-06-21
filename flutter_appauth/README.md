@@ -11,13 +11,14 @@ A Flutter bridge for AppAuth (https://appauth.io) used authenticating and author
 
 ## Tutorials from identity providers
 
+* [Asgardeo](https://wso2.com/asgardeo/docs/tutorials/auth-users-into-flutter-apps/)
 * [Auth0](https://auth0.com/blog/get-started-with-flutter-authentication/)
 * [FusionAuth](https://fusionauth.io/blog/2020/11/23/securing-flutter-oauth/)
 
 
 ## Getting Started
 
-Please see the example that demonstrates how to sign into the IdentityServer4 demo site (https://demo.identityserver.io). It has also been tested with Azure B2C and Google Sign-in. It is suggested that developers check the documentation of the identity provider they are using to see what capabilities it supports e.g. how to logout, what values of the `prompt` parameter it supports etc. API docs can be found [here](https://pub.dartlang.org/documentation/flutter_appauth/latest/)
+Please see the example that demonstrates how to sign into the demo IdentityServer instance (https://demo.duendesoftware.com). It has also been tested with Azure B2C and Google Sign-in. It is suggested that developers check the documentation of the identity provider they are using to see what capabilities it supports e.g. how to logout, what values of the `prompt` parameter it supports etc. API docs can be found [here](https://pub.dartlang.org/documentation/flutter_appauth/latest/)
 
 
 The first step is to create an instance of the plugin
@@ -39,7 +40,7 @@ final AuthorizationTokenResponse result = await appAuth.authorizeAndExchangeCode
                   );
 ```
 
-Here the `<client_id>` and `<redirect_url>` should be replaced by the values registered with your identity provider. The `<discovery_url>` would be the URL for the discovery endpoint exposed by your provider that will return a document containing information about the OAuth 2.0 endpoints among other things. This URL is obtained by concatenating the issuer with the path `/.well-known/openid-configuration`. For example, the full URL for the IdentityServer4 demo site is `https://demo.identityserver.io/.well-known/openid-configuration`. As demonstrated in the above sample code, it's also possible specify the `scopes` being requested.
+Here the `<client_id>` and `<redirect_url>` should be replaced by the values registered with your identity provider. The `<discovery_url>` would be the URL for the discovery endpoint exposed by your provider that will return a document containing information about the OAuth 2.0 endpoints among other things. This URL is obtained by concatenating the issuer with the path `/.well-known/openid-configuration`. For example, the full URL for the IdentityServer instance is `https://demo.duendesoftware.com/.well-known/openid-configuration`. As demonstrated in the above sample code, it's also possible specify the `scopes` being requested.
 
 Rather than using the full discovery URL, the issuer could be used instead so that the process retrieving the discovery document is skipped
 
@@ -54,30 +55,33 @@ final AuthorizationTokenResponse result = await appAuth.authorizeAndExchangeCode
                   );
 ```
 
-If you already know the authorization and token endpoints, which may be because discovery isn't supported, then these could be explicitly specified
+In the event that discovery isn't supported or that you already know the endpoints for your server, they could be explicitly specified
 
 ```dart
 final AuthorizationTokenResponse result = await appAuth.authorizeAndExchangeCode(
                     AuthorizationTokenRequest(
                       '<client_id>',
                       '<redirect_url>',
-                      serviceConfiguration: AuthorizationServiceConfiguration('<authorization_endpoint>', '<token_endpoint>'),
-                      scopes: ['openid','profile', 'email', 'offline_access', 'api']
+                      serviceConfiguration: AuthorizationServiceConfiguration(authorizationEndpoint: '<authorization_endpoint>',  tokenEndpoint: '<token_endpoint>', endSessionEndpoint: '<end_session_endpoint>'),
+                      scopes: [...]
                     ),
                   );
 ```
 
 Upon completing the request successfully, the method should return an object (the `result` variable in the above sample code is an instance of the `AuthorizationTokenResponse` class) that contain details that should be stored for future use e.g. access token, refresh token etc.
 
-If you would prefer to not have the automatic code exchange to happen then can call the `authorize` method instead of the `authorizeAndExchangeCode` method. This will return an instance of the `AuthorizationResponse` class that will contain the code verifier that AppAuth generated (as part of implementing PKCE) when issuing the authorization request, the authorization code and additional parameters should they exist. Both of the code verifier and authorization code would need to be stored so they can then be reused to exchange the code later on e.g.
+If you would prefer to not have the automatic code exchange to happen then can call the `authorize` method instead of the `authorizeAndExchangeCode` method. This will return an instance of the `AuthorizationResponse` class that will contain the nonce value and code verifier (note: code verifier is used as part of implement PKCE) that AppAuth generated when issuing the authorization request, the authorization code and additional parameters should they exist. The nonce, code verifier and authorization code would need to be stored so they can then be reused to exchange the code later on e.g.
 
 ```dart
 final TokenResponse result = await appAuth.token(TokenRequest('<client_id>', '<redirect_url>',
         authorizationCode: '<authorization_code>',
         discoveryUrl: '<discovery_url>',
         codeVerifier: '<code_verifier>',
+        nonce: 'nonce',
         scopes: ['openid','profile', 'email', 'offline_access', 'api']));
 ```
+
+Reusing the nonce and code verifier is particularly important as the AppAuth SDKs (especially on Android) may return an error (e.g. ID token validation error due to nonce mismatch) if this isn't done
 
 ### Refreshing tokens
 
@@ -90,46 +94,81 @@ final TokenResponse result = await appAuth.token(TokenRequest('<client_id>', '<r
         scopes: ['openid','profile', 'email', 'offline_access', 'api']));
 ```
 
+### End session
+
+If your server has an [end session endpoint](https://openid.net/specs/openid-connect-rpinitiated-1_0.html), you can trigger an end session request that is typically used for logging out of the built-in browser with code similar to what's shown below
+
+```dart
+await appAuth.endSession(EndSessionRequest(
+          idTokenHint: '<idToken>',
+          postLogoutRedirectUrl: '<postLogoutRedirectUrl>',
+          serviceConfiguration: AuthorizationServiceConfiguration(authorizationEndpoint: '<authorization_endpoint>',  tokenEndpooint: '<token_endpoint>', endSessionEndpoint: '<end_session_endpoint>'));
+```
+
+The above code passes an `AuthorizationServiceConfiguration` with all the endpoints defined but alternatives are to specify an `issuer` or `discoveryUrl` like you would with the other APIs in the plugin (e.g. `authorizeAndExchangeCode()`).
+
+### Ephemeral Sessions (iOS and macOS only)
+On iOS (versions 13 and above) and macOS you can use the option `preferEphemeralSession = true` to start an 
+[ephemeral browser session](https://developer.apple.com/documentation/foundation/urlsessionconfiguration/1410529-ephemeral)
+to sign in and sign out.
+
+With an ephemeral session there will be no warning like `"app_name" Wants to Use "domain_name" to Sign In` on iOS.
+
+The option `preferEphemeralSession = true` must only be used for the end session call if it is also used for the sign in call. 
+Otherwise, there will be still an active login session in the browser.
+
 ## Android setup
 
 Go to the `build.gradle` file for your Android app to specify the custom scheme so that there should be a section in it that look similar to the following but replace `<your_custom_scheme>` with the desired value
 
 ```
-...
+...groovy
 android {
     ...
     defaultConfig {
         ...
-        manifestPlaceholders = [
+        manifestPlaceholders += [
                 'appAuthRedirectScheme': '<your_custom_scheme>'
         ]
     }
 }
 ```
 
-Please ensure that value of `<your_custom_scheme>` is all in lowercase as there've been reports from the community who had issues with redirects if there were any capital letters.
-
-If your app is target API 30 or above (i.e. Android 11 or newer), make sure to add the following to your `AndroidManifest.xml` file a level underneath the `<manifest>` element
-
+Alternatively, the redirect URI can be directly configured by adding an
+intent-filter for AppAuth's RedirectUriReceiverActivity to your
+AndroidManifest.xml:
 
 ```xml
-<queries>
-    <intent>
-        <action android:name="android.intent.action.VIEW" />
-        <category android:name="android.intent.category.BROWSABLE" />
-        <data android:scheme="https" />
-    </intent>
-    <intent>
-        <action android:name="android.intent.action.VIEW" />
-        <category android:name="android.intent.category.APP_BROWSER" />
-        <data android:scheme="https" />
-    </intent>
-</queries>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.example.my_app">
+...
+<activity
+        android:name="net.openid.appauth.RedirectUriReceiverActivity"
+        android:exported="true"
+        tools:node="replace">
+    <intent-filter>
+        <action android:name="android.intent.action.VIEW"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+        <category android:name="android.intent.category.BROWSABLE"/>
+        <data android:scheme="<your_custom_scheme>"
+              android:host="<your_custom_host>"/>
+    </intent-filter>
+</activity>
+...
 ```
 
-## iOS setup
+Please ensure that value of `<your_custom_scheme>` is all in lowercase as there've been reports from the community who had issues with redirects if there were any capital letters. You may also notice the `+=` operation is applied on `manifestPlaceholders` instead of `=`. This is intentional and required as newer versions of the Flutter SDK has made some changes underneath the hood to deal with multidex. Using `=` instead of `+=` can lead to errors like the following
 
-Go to the `Info.plist` for your iOS app to specify the custom scheme so that there should be a section in it that look similar to the following but replace `<your_custom_scheme>` with the desired value
+```
+Attribute application@name at AndroidManifest.xml:5:9-42 requires a placeholder substitution but no value for <applicationName> is provided.
+```
+
+If you see this error then update your `build.gradle` to use `+=` instead.
+
+## iOS/macOS setup
+
+Go to the `Info.plist` for your iOS/macOS app to specify the custom scheme so that there should be a section in it that look similar to the following but replace `<your_custom_scheme>` with the desired value
 
 
 ```xml
@@ -145,3 +184,11 @@ Go to the `Info.plist` for your iOS app to specify the custom scheme so that the
     </dict>
 </array>
 ```
+
+Note: iOS apps generate a file called `cache.db` which contains the table `cfurl_cache_receiver_data`. This table will contain the access token obtained after the login is completed. If the potential data leak represents a threat for your application then you can disable the information caching for the entire iOS app (ex. https://kunalgupta1508.medium.com/data-leakage-with-cache-db-2d311582cf23).
+
+## FAQs
+
+**When connecting to Azure B2C or Azure AD, the login request redirects properly on Android but not on iOS. What's going on?**
+
+The AppAuth iOS SDK has some logic to validate the redirect URL to see if it should be responsible for processing the redirect. This appears to be failing under certain circumstances. Adding a trailing slash to the redirect URL specified in your code has been reported to fix the issue.

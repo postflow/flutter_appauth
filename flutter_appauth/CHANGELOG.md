@@ -1,3 +1,159 @@
+# 6.0.6
+
+* [iOS][macOS] bumped AppAuth iOS dependency to 1.7.4
+
+# 6.0.5
+
+* [iOS] bumped AppAuth iOS dependency to 1.7.2
+
+# 6.0.4
+
+* [Android] when no suitable browser is found when calling either `authorize()` or `authorizeAndExchange()`, rather than crashing the plugin will now throw a `PlatformException` with an error code of `no_browser_available`. Thanks to the PR from [NikHomann](https://github.com/NikHomann)
+* Removed duplicate asterisk from the 6.0.3 changelog entry around how the example app got updated
+
+# 6.0.3
+
+* [Android] community has reported that there seem to be instances where the plugin encounters a null intent on some devices upon processing a end session request. This resulted in a crash before but will now throw a `PlatformException`. Thanks to the PR from [John](https://github.com/JohnKim7)
+* Updated example app so that the Android side specifies the minimum SDK version version that aligns with what's specified by the Flutter SDK
+
+# 6.0.2+1
+
+* [iOS] added privacy manifest
+
+# 6.0.2
+
+* [macOS] fixed deprecation warning around using `init` and to use `initWithPresentingWindow` via the AppAuth iOS/macOS SDK instead. Thanks to the PR from [Ivan Tivonenko](https://github.com/darkdarkdragon)
+
+# 6.0.1
+
+* [iOS] updated plugin so it supports apps that leverage the multiple window capability that Apple added to iOS 13. Thanks to the PR from [Jerold Albertson](https://github.com/jeroldalbertson-wf)
+* Added a link to the tutorials section of the readme that walks through how to use this plugin with Asgardeo. Thanks to the PR from [Achintha Isuru](https://github.com/Achintha444)
+
+# 6.0.0
+
+* **Potentially breaking change** [iOS][macOS] bumped AppAuth dependency to 1.6.2 where fixes were done to allow SDK to compile in Xcode 14 by bumping the minimum OS versions
+* Bumped maximum Dart SDK constraint
+* Recreated iOS and macOS side of example app so it would work with new Flutter 3.10 stable release
+
+
+## 5.0.0
+
+* **Breaking change** Bumped minimum Flutter SDK version to 3.0.0 and Dart SDK version to 2.17
+* [Android] removed references to v1 embedding
+* [Android] updated `compileSdkVersion` to 31 (Android 12)
+* [Android] bumped AGP (Android Gradle plugin) to 7.4.2
+* [Android] conditionally adds a namespace for compatibility with AGP 8.0
+    * Note: it's quite likely that the AppAuth Android SDK itself requires this change going forward but this change will ensure that the `flutter_appauth` plugin has done this change ahead of time
+* Applied following updates to the example app on the Android side
+    * Bumped AGP to 7.4.2 and Gradle 7.5
+    * Used namespace instead of package identifier since the latter has been deprecated (reference: https://developer.android.com/build/releases/past-releases/agp-7-3-0-release-notes#package-deprecated). Note that as of this writing, using the `flutter run` command on the stable channel (i.e. Flutter version 3.7.1) to debug/run the app will in an error that says "package identifier or launch activity not found". However, an APK or app bundle can still be built and will run on a device. The Flutter team have already addressed this issue on the master channel that is currently on version 3.10.0-17.0.pre.21 so would expect the next stable release to contain the fix. Alternatively developers can manually restore the package identifier though this change was done to avoid issues from happening in the future
+
+## 4.2.1+1
+
+* Added comments to example app to explain how code challenge takes place per PKCE. Thanks to PR from [Davide Ravasi](https://github.com/davideravasi)
+* Updated code for API docs to avoid lines longer than 80 characters
+
+## 4.2.1
+
+* [iOS][macOS] bumped AppAuth dependency to 1.6.0
+
+## 4.2.0
+
+* Added `preferEphemeralSession` to `EndSessionRequest` Thanks to the PR from [Daniel Ziegler](https://github.com/ziegler-daniel)
+
+## 4.1.0+1
+
+* Added missing credit to 4.1.0 changelog entry
+* Updated readme to remove Android setup step for setting `queries` in `AndroidManifest.xml` as that is now handled directly with the AppAuth Android SDK
+
+## 4.1.0
+
+* Added ability to specify the `nonce` as part of requests. Thanks to the PR from [Tiernan](https://github.com/nvx)
+
+## 4.0.1
+
+* Bumped AppAuth iOS dependency. Thanks to PR from [Didier Prophete](https://github.com/dprophete)
+
+## 4.0.0
+
+* Added support for macOS. Thanks to the PR from [Jordy Langen](https://github.com/JordyLangen)
+
+## 3.0.1
+
+* [iOS] fix `nonce` not being returned correctly on iOS
+
+## 3.0.0
+
+* **Breaking change** `AuthorizationResponse`'s  constructor now includes `nonce` and has changed to take positional parameters
+* `nonce` can now be specified for `TokenRequest` class. This is especially useful on Android as the AppAuth Android SKD had turned on ID token validation that results in nonce mismatch errors. These errors should no longer appear when using the `nonce` value returned by the `AuthorizationResponse` object after calling `authorize()` and passing the value to the `TokenRequest` when calling the `token()` method
+* Bumped AppAuth Android SDK to 0.11.1 where the SDK reports that it has fixed an [issue](https://github.com/openid/AppAuth-Android/issues/769) where rotating device could lead to the SDK reporting that the user cancelled login flow
+
+## 2.4.2
+
+* Added const constructor to `FlutterAppAuth`
+
+## 2.4.1+1
+
+* Example app has been updated to point to the new demo IdentityServer instance
+
+## 2.4.1
+
+* [iOS] fixed issue with `scopes` not being sent correctly as they should've been space-delimited instead of comma-delimited. Thanks to the PR from [Angle Wang](https://github.com/angle319)
+
+## 2.4.0
+
+* Added `scopes` property to `TokenResponse` class and `AuthorizationTokenResponse` class that inherits from it. Thanks to PR from [leoshusar](https://github.com/leoshusar)
+* [Android] applied fix to a scenario where skipping https check on the issuer wasn't done for refreshing tokens. Thanks to the PR from [Javier Puerto](https://github.com/jpuerto)
+
+## 2.3.0
+
+* [Android] `claims` can now be passed as part of the `additionalParameters` included with requests without triggering an exception by the AppAuth Android SDK. Thanks to the PR from [Garry Jeromson](https://github.com/garry-jeromson)
+
+## 2.2.0+1
+
+* Updated Android setup section in the readme around setting the redirect scheme via manifest placeholders. If you've experienced Android build errors that says `applicationName` can't be found then check the readme for updated instructions, which is to use the `+=` operation instead of `=` on the `manifestPlaceholders` property in the `build.gradle` file
+
+## 2.2.0
+
+* [Android] updated error handling so more details are returned. Thanks to [Andreas Kägi](https://github.com/akaegi) for originally starting on the PR
+
+## 2.1.0+1
+
+* Fix grammar in 2.1.0 changelog entry
+
+## 2.1.0
+
+* [Android] `ui_locales` can now be passed as part of the `additionalParameters` included with requests without triggering an exception by the AppAuth Android SDK. Thanks to the PR from [dimitristoz](https://github.com/dimitristoz)
+
+## 2.0.0
+
+* **Breaking change** `AuthorizationServiceConfiguration` constructor has changed to take named parameters
+* Added `endSession()` method, `EndSessionRequest` and `EndSessionResponse` classes to support end session requests
+* [Android] skips https issuer check if `allowInsecureConnections` is true. Thanks to the PR from [Roman Fürst](https://github.com/rfuerst87)
+* Bumped AppAuth Android and iOS SDK dependencies
+* Added FAQs section to readme to describe a common iOS issue with Azure B2C and Azure AD
+
+## 1.1.1
+
+* [Android] Migrate maven repository from jcenter to mavenCentral.
+
+## 1.1.0+2
+
+* Bumped AppAuth Android and iOS dependencies
+
+## 1.1.0+1
+
+* Updated the minimum version iOS supported by the example app to 9.0 since Flutter 2.5 has deprecated support for 8.0
+
+## 1.1.0
+
+* * Added the ability to specify the response mode for authorization requests. This can be done using the `responseMode` parameter  when constructing either an `AuthorizationRequest` or `AuthorizationTokenRequest`. This was done as the AppAuth Android SDK throws an exception when this was done via `additionalParameters`
+* Updated Dart SDK constraints
+
+## 1.0.0+1
+
+* There are no functional changes in this release. The only changes done were to suppress warnings that were occurring as a result of making use of Android v1 embedding APIs for backwards compatibility
+
 ## 1.0.0
 
 * Migrated to null safety
